@@ -1,0 +1,209 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    BYTEBITES BACKEND - UML CLASS DIAGRAM                        ║
+║                           Four Core Classes System                              ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+                           ┌──────────────────────┐
+                           │      MenuItem        │
+                           ├──────────────────────┤
+                           │ - name: str          │
+                           │ - price: float       │
+                           │ - category: str      │
+                           │ - popularity_rating: │
+                           │   float              │
+                           └──────────────────────┘
+                                    ▲
+                                    │
+                    ┌───────────────┴────────────────┐
+                    │                                │
+                    │ manages                        │ contains
+                    │ (1 to *)                       │ (N to *)
+                    │                                │
+        ┌───────────┴──────────────┐    ┌───────────┴──────────────┐
+        │                          │    │                          │
+        │                          │    │                          │
+
+
+╔════════════════════════════════════╗
+║        RESTAURANT (Vendor)         ║
+╠════════════════════════════════════╣
+║ ATTRIBUTES:                        ║
+║  - name: str                       ║
+║  - address: str                    ║
+║  - operating_hours: Dict[str,str]  ║
+║  - menu_items: List[MenuItem]      ║
+║                                    ║
+║ METHODS:                           ║
+║  + set_operating_hours(day, hours) ║
+║  + add_menu_item(item)             ║
+║  + remove_item(name)               ║
+║  + get_menu_items()                ║
+║  + filter_by_category(cat)         ║
+║  + __repr__()                      ║
+╚════════════════════════════════════╝
+        │
+        │ fulfills
+        │ (1 to N)
+        │
+        ├─────────────────────────────────┐
+        │                                 │
+        │                                 │
+
+
+╔════════════════════════════════════╗         ╔════════════════════════════════════╗
+║       USER (Customer)              ║         ║      ORDER (Transaction)           ║
+╠════════════════════════════════════╣         ╠════════════════════════════════════╣
+║ ATTRIBUTES:                        ║         ║ ATTRIBUTES:                        ║
+║  - name: str                       ║         ║  - user: User                      ║
+║  - contact_info: str               ║         ║  - restaurant: Restaurant          ║
+║  - saved_addresses: List[str]      ║         ║  - driver: Driver                  ║
+║  - payment_methods: List[Dict]     ║         ║  - selected_items: List[MenuItem]  ║
+║  - purchase_history: List[Order]   ║◄───────│  - status: str                     ║
+║                                    ║ placed │  - total_cost: float               ║
+║ METHODS:                           ║ by     │  - created_at: datetime            ║
+║  + add_saved_address(addr)         ║ (1:N)  │  - completed_at: datetime          ║
+║  + add_payment_method(method)      ║        │                                    ║
+║  + add_to_purchase_history(order)  ║        │ METHODS:                           ║
+║  + is_real_user(): bool            ║        │  + add_item(item)                  ║
+║  + __repr__()                      ║        │  + remove_item(item)               ║
+╚════════════════════════════════════╝        │  + _compute_total_cost()           ║
+                                              │  + assign_driver(driver)           ║
+                                              │  + update_status(status)           ║
+                                              │  + get_order_summary(): Dict       ║
+                                              │  + __repr__()                      ║
+                                              ╚════════════════════════════════════╝
+                                                    │
+                                                    │ assigned_to
+                                                    │ (0..1 to N)
+                                                    │
+                                                    ▼
+                                        ╔════════════════════════════════════╗
+                                        ║     DRIVER (Courier)               ║
+                                        ╠════════════════════════════════════╣
+                                        ║ ATTRIBUTES:                        ║
+                                        ║  - name: str                       ║
+                                        ║  - vehicle_type: str               ║
+                                        ║  - current_location: str           ║
+                                        ║  - is_available: bool              ║
+                                        ║  - active_deliveries: List[Order]  ║
+                                        ║                                    ║
+                                        ║ METHODS:                           ║
+                                        ║  + set_location(location)          ║
+                                        ║  + set_availability(available)     ║
+                                        ║  + accept_delivery(order)          ║
+                                        ║  + complete_delivery(order)        ║
+                                        ║  + __repr__()                      ║
+                                        ╚════════════════════════════════════╝
+
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                          RELATIONSHIP MATRIX                                   ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                ║
+║  User ──initiates──► Order                                        (1 User : N Orders)
+║         One customer can place multiple orders                     Cardinality: 1:N
+║                                                                                ║
+║  Restaurant ──fulfills──► Order                                  (1 Restaurant : N Orders)
+║         One restaurant can fulfill multiple orders                 Cardinality: 1:N
+║                                                                                ║
+║  Driver ──delivers──► Order                                      (1 Driver : N Orders)
+║         One driver can deliver multiple orders                     Cardinality: 1:N (0..1 optional)
+║                                                                                ║
+║  Order ──contains──► MenuItem                                    (N Orders : N Items)
+║         An order can contain multiple items                        Cardinality: N:N
+║                                                                                ║
+║  Restaurant ──manages──► MenuItem                                (1 Restaurant : N Items)
+║         A restaurant manages its menu items                        Cardinality: 1:N
+║         Supports filtering by category (Drinks, Desserts, etc.)                ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                         CLASS RESPONSIBILITIES                                 ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                ║
+║  USER (Customer)                                                               ║
+║  ├─ Manage customer identity (name, contact info)                              ║
+║  ├─ Store saved addresses and payment methods                                  ║
+║  ├─ Maintain purchase history for verification                                 ║
+║  └─ Determine if user is a "real user" (has purchase history)                  ║
+║                                                                                ║
+║  RESTAURANT (Vendor)                                                           ║
+║  ├─ Manage restaurant details (name, address, hours)                           ║
+║  ├─ Build and maintain menu catalog                                            ║
+║  ├─ Add/remove menu items                                                      ║
+║  └─ Filter items by category (Drinks, Desserts, Burgers, etc.)                ║
+║                                                                                ║
+║  ORDER (Transaction)                                                           ║
+║  ├─ Link user, restaurant, and driver                                          ║
+║  ├─ Store selected items from menu                                             ║
+║  ├─ Automatically calculate total cost                                         ║
+║  ├─ Track order status (Placed → Preparing → Delivering → Completed)           ║
+║  └─ Provide order summary information                                          ║
+║                                                                                ║
+║  DRIVER (Courier)                                                              ║
+║  ├─ Store driver identity (name, vehicle type)                                 ║
+║  ├─ Track current location for delivery                                        ║
+║  ├─ Manage availability status                                                 ║
+║  ├─ Accept and complete deliveries                                             ║
+║  └─ Maintain list of active deliveries                                         ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    SPECIFICATION REQUIREMENTS MET                              ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                ║
+║  ✓ Manage customers with names and purchase history                           ║
+║    → User class with purchase_history list for real user verification          ║
+║                                                                                ║
+║  ✓ Browse food items with name, price, category, popularity rating            ║
+║    → MenuItem class with all four attributes                                   ║
+║                                                                                ║
+║  ✓ Manage full collection of items with category filtering                    ║
+║    → Restaurant.menu_items list with filter_by_category() method              ║
+║                                                                                ║
+║  ✓ Group items into single transaction with selected items and total cost     ║
+║    → Order class with selected_items list and automatic cost calculation       ║
+║                                                                                ║
+║  ✓ Model order state (Placed, Preparing, Delivering, Completed)               ║
+║    → Order.status attribute and update_status() method                         ║
+║                                                                                ║
+║  ✓ Link User, Restaurant, and Driver in order management                      ║
+║    → Order class maintains references to all three                             ║
+║                                                                                ║
+║  ✓ Track delivery logistics with location and vehicle details                  ║
+║    → Driver class with current_location, vehicle_type, and availability        ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                              USAGE EXAMPLE                                     ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                ║
+║  # Create restaurant and menu                                                  ║
+║  restaurant = Restaurant("Spicy Delights", "123 Main St")                      ║
+║  restaurant.add_menu_item(MenuItem("Spicy Burger", 12.99, "Burgers", 4.8))     ║
+║  restaurant.add_menu_item(MenuItem("Large Soda", 3.49, "Drinks", 4.5))         ║
+║                                                                                ║
+║  # Create user and order                                                       ║
+║  user = User("John Doe", "555-0123")                                           ║
+║  order = Order(user, restaurant)                                               ║
+║  order.add_item(restaurant.menu_items[0])  # Add Spicy Burger                 ║
+║  order.add_item(restaurant.menu_items[1])  # Add Large Soda                   ║
+║                                                                                ║
+║  # Assign driver and process                                                   ║
+║  driver = Driver("Alice Smith", "Car")                                         ║
+║  order.assign_driver(driver)                                                   ║
+║  order.update_status("PREPARING")                                              ║
+║  order.update_status("DELIVERING")                                             ║
+║  order.update_status("COMPLETED")                                              ║
+║                                                                                ║
+║  # Verify real user                                                            ║
+║  print(user.is_real_user())  # True (order added to purchase_history)          ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
